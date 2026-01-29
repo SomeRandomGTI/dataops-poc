@@ -26,12 +26,12 @@ jobs:
 
       - name: Apply schema (DEV)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (DEV)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f etl/load_customers.sql
 
   # -------------------------
@@ -54,12 +54,12 @@ jobs:
 
       - name: Apply schema (INT)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (INT)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f etl/load_customers.sql
 
   # -------------------------
@@ -82,12 +82,12 @@ jobs:
 
       - name: Apply schema (QA)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (QA)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f etl/load_customers.sql
 
   # -------------------------
@@ -112,10 +112,10 @@ jobs:
 
       - name: Apply schema (PROD)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (PROD)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f etl/load_customers.sql
