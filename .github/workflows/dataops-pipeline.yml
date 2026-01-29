@@ -1,0 +1,52 @@
+name: DataOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply schema (DEV)
+        run: |
+          psql "$DB_CONN" -f db/migrations/001_create_customers.sql
+        env:
+          DB_CONN: postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}/data_dev
+
+      - name: Run ETL (DEV)
+        run: |
+          psql "$DB_CONN" -f etl/load_customers.sql
+        env:
+          DB_CONN: postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}/data_dev
+
+  deploy-int:
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: int
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ETL (INT)
+        run: echo "INT execution simulated"
+
+  deploy-qa:
+    runs-on: ubuntu-latest
+    needs: deploy-int
+    environment: qa
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ETL (QA)
+        run: echo "QA execution simulated"
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: deploy-qa
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ETL (PROD)
+        run: echo "PROD execution simulated"
