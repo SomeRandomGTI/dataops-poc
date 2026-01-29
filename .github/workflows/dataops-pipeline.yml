@@ -22,7 +22,8 @@ jobs:
         run: |
           psql "$DB_CONN" -f etl/load_customers.sql
         env:
-          DB_CONN: postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}/data_dev
+          DB_CONN: postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:5432/${{ secrets.DB_NAME }}
+
 
   deploy-int:
     runs-on: ubuntu-latest
