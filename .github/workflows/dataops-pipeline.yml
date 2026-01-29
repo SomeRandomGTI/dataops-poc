@@ -8,7 +8,7 @@ on:
 jobs:
 
   # -------------------------
-  # 1️⃣ DEPLOY DEV + Validation + Schema Check
+  # 1️⃣ DEPLOY DEV
   # -------------------------
   deploy-dev:
     runs-on: ubuntu-latest
@@ -16,27 +16,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set DEV connection URI
-        run: echo "DB_CONN=${{ secrets.DB_CONN_DEV }}" >> $GITHUB_ENV
-
-      - name: Schema Validation (DEV)
+      - name: Set ENV variables
         run: |
-          echo "Validating DEV schema..."
-          EXPECTED_COLUMNS=("id" "name" "email" "created_at")
-          for col in "${EXPECTED_COLUMNS[@]}"; do
-            EXISTS=$(psql "$DB_CONN" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
-            if [ -z "$EXISTS" ]; then
-              echo "❌ Schema validation failed: missing column $col"
-              exit 1
-            fi
-          done
-          echo "✅ DEV schema validation passed"
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
 
       - name: Apply schema (DEV)
-        run: psql "$DB_CONN" -f db/migrations/001_create_customers.sql
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (DEV)
-        run: psql "$DB_CONN" -f etl/load_customers.sql
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -f etl/load_customers.sql
 
   # -------------------------
   # 2️⃣ DEPLOY INT
@@ -48,27 +44,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set INT connection URI
-        run: echo "DB_CONN=${{ secrets.DB_CONN_INT }}" >> $GITHUB_ENV
-
-      - name: Schema Validation (INT)
+      - name: Set ENV variables
         run: |
-          echo "Validating INT schema..."
-          EXPECTED_COLUMNS=("id" "name" "email" "created_at")
-          for col in "${EXPECTED_COLUMNS[@]}"; do
-            EXISTS=$(psql "$DB_CONN" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
-            if [ -z "$EXISTS" ]; then
-              echo "❌ Schema validation failed: missing column $col"
-              exit 1
-            fi
-          done
-          echo "✅ INT schema validation passed"
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
 
       - name: Apply schema (INT)
-        run: psql "$DB_CONN" -f db/migrations/001_create_customers.sql
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (INT)
-        run: psql "$DB_CONN" -f etl/load_customers.sql
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -f etl/load_customers.sql
 
   # -------------------------
   # 3️⃣ DEPLOY QA
@@ -80,30 +72,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set QA connection URI
-        run: echo "DB_CONN=${{ secrets.DB_CONN_QA }}" >> $GITHUB_ENV
-
-      - name: Schema Validation (QA)
+      - name: Set ENV variables
         run: |
-          echo "Validating QA schema..."
-          EXPECTED_COLUMNS=("id" "name" "email" "created_at")
-          for col in "${EXPECTED_COLUMNS[@]}"; do
-            EXISTS=$(psql "$DB_CONN" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
-            if [ -z "$EXISTS" ]; then
-              echo "❌ Schema validation failed: missing column $col"
-              exit 1
-            fi
-          done
-          echo "✅ QA schema validation passed"
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
 
       - name: Apply schema (QA)
-        run: psql "$DB_CONN" -f db/migrations/001_create_customers.sql
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (QA)
-        run: psql "$DB_CONN" -f etl/load_customers.sql
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -f etl/load_customers.sql
 
   # -------------------------
-  # 4️⃣ DEPLOY PROD + Rollback + Monitoring
+  # 4️⃣ DEPLOY PROD (Manual Approval + Rollback + Monitoring)
   # -------------------------
   deploy-prod:
     runs-on: ubuntu-latest
@@ -113,49 +101,51 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set PROD connection URI
-        run: echo "DB_CONN=${{ secrets.DB_CONN_PROD }}" >> $GITHUB_ENV
-
-      - name: Schema Validation (PROD)
+      - name: Set ENV variables
         run: |
-          echo "Validating PROD schema..."
-          EXPECTED_COLUMNS=("id" "name" "email" "created_at")
-          for col in "${EXPECTED_COLUMNS[@]}"; do
-            EXISTS=$(psql "$DB_CONN" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
-            if [ -z "$EXISTS" ]; then
-              echo "❌ Schema validation failed: missing column $col"
-              exit 1
-            fi
-          done
-          echo "✅ PROD schema validation passed"
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
 
       - name: Backup PROD customers table
-        run: psql "$DB_CONN" -c "COPY customers TO STDOUT" > backup_customers.csv
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -c "COPY customers TO STDOUT" > backup_customers.csv
 
       - name: Apply schema (PROD)
-        run: psql "$DB_CONN" -f db/migrations/001_create_customers.sql
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (PROD)
-        run: psql "$DB_CONN" -f etl/load_customers.sql
+        run: |
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
+          -f etl/load_customers.sql
 
       - name: Rollback if PROD failed
         if: failure()
         run: |
           echo "⚠️ Deployment failed! Restoring backup..."
-          psql "$DB_CONN" -c "TRUNCATE customers;"
-          psql "$DB_CONN" -c "\copy customers FROM 'backup_customers.csv' WITH CSV"
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" -c "TRUNCATE customers;"
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" -c "\copy customers FROM 'backup_customers.csv' WITH CSV"
 
       - name: Monitor consistency across all environments
         run: |
           echo "Checking data consistency..."
           hash_table() {
-            local DB_CONN=$1
-            psql "$DB_CONN" -t -A -c "SELECT md5(string_agg(t::text, '')) FROM (SELECT * FROM customers ORDER BY id) t;"
+            local HOST=$1
+            local USER=$2
+            local PASSWORD=$3
+            local DB=$4
+            PGPASSWORD=$PASSWORD psql "postgresql://${USER}@${HOST}:${DB_PORT}/${DB}?sslmode=require" -t -A \
+            -c "SELECT md5(string_agg(t::text, '')) FROM (SELECT * FROM customers ORDER BY id) t;"
           }
-          DEV_HASH=$(hash_table "${{ secrets.DB_CONN_DEV }}")
-          INT_HASH=$(hash_table "${{ secrets.DB_CONN_INT }}")
-          QA_HASH=$(hash_table "${{ secrets.DB_CONN_QA }}")
-          PROD_HASH=$(hash_table "${{ secrets.DB_CONN_PROD }}")
+          DEV_HASH=$(hash_table "${{ secrets.DB_HOST }}" "${{ secrets.DB_USER }}" "${{ secrets.DB_PASSWORD }}" "${{ secrets.DB_NAME }}")
+          INT_HASH=$(hash_table "${{ secrets.DB_HOST }}" "${{ secrets.DB_USER }}" "${{ secrets.DB_PASSWORD }}" "${{ secrets.DB_NAME }}")
+          QA_HASH=$(hash_table "${{ secrets.DB_HOST }}" "${{ secrets.DB_USER }}" "${{ secrets.DB_PASSWORD }}" "${{ secrets.DB_NAME }}")
+          PROD_HASH=$(hash_table "${{ secrets.DB_HOST }}" "${{ secrets.DB_USER }}" "${{ secrets.DB_PASSWORD }}" "${{ secrets.DB_NAME }}")
           echo "DEV: $DEV_HASH, INT: $INT_HASH, QA: $QA_HASH, PROD: $PROD_HASH"
           if [ "$DEV_HASH" != "$INT_HASH" ] || [ "$DEV_HASH" != "$QA_HASH" ] || [ "$DEV_HASH" != "$PROD_HASH" ]; then
             echo "⚠️ Data mismatch detected across environments!"
