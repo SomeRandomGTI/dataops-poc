@@ -1,4 +1,5 @@
-INSERT INTO customers (id, name, created_at)
+INSERT INTO customers (name)
 VALUES
-  (1, 'Alice', NOW()),
-  (2, 'Bob', NOW());
+  ('Alice'),
+  ('Bob'),
+  ('Charlie');
