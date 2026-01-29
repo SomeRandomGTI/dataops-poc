@@ -29,7 +29,7 @@ jobs:
           echo "Validating DEV schema..."
           EXPECTED_COLUMNS=("id" "name" "email" "created_at")
           for col in "${EXPECTED_COLUMNS[@]}"; do
-            EXISTS=$(PGPASSWORD=$DB_PASSWORD psql -t -A -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
+            EXISTS=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
             if [ -z "$EXISTS" ]; then
               echo "❌ Schema validation failed: missing column $col"
               exit 1
@@ -39,18 +39,16 @@ jobs:
 
       - name: Apply schema (DEV)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
-          -f db/migrations/001_create_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (DEV)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
-          -f etl/load_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f etl/load_customers.sql
 
       - name: DEV Validation / Unit Test
         run: |
           echo "Running DEV validation..."
-          COUNT=$(PGPASSWORD=$DB_PASSWORD psql -t -A -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT COUNT(*) FROM customers WHERE email IS NULL;")
+          COUNT=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT COUNT(*) FROM customers WHERE email IS NULL;")
           if [ "$COUNT" != "0" ]; then
             echo "❌ Validation failed: some customers have NULL emails"
             exit 1
@@ -80,7 +78,7 @@ jobs:
           echo "Validating INT schema..."
           EXPECTED_COLUMNS=("id" "name" "email" "created_at")
           for col in "${EXPECTED_COLUMNS[@]}"; do
-            EXISTS=$(PGPASSWORD=$DB_PASSWORD psql -t -A -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
+            EXISTS=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
             if [ -z "$EXISTS" ]; then
               echo "❌ Schema validation failed: missing column $col"
               exit 1
@@ -90,18 +88,16 @@ jobs:
 
       - name: Apply schema (INT)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
-          -f db/migrations/001_create_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (INT)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
-          -f etl/load_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f etl/load_customers.sql
 
       - name: INT Validation / Unit Test
         run: |
           echo "Running INT validation..."
-          COUNT=$(PGPASSWORD=$DB_PASSWORD psql -t -A -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT COUNT(*) FROM customers WHERE email IS NULL;")
+          COUNT=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT COUNT(*) FROM customers WHERE email IS NULL;")
           if [ "$COUNT" != "0" ]; then
             echo "❌ Validation failed: some customers have NULL emails"
             exit 1
@@ -131,7 +127,7 @@ jobs:
           echo "Validating QA schema..."
           EXPECTED_COLUMNS=("id" "name" "email" "created_at")
           for col in "${EXPECTED_COLUMNS[@]}"; do
-            EXISTS=$(PGPASSWORD=$DB_PASSWORD psql -t -A -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
+            EXISTS=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
             if [ -z "$EXISTS" ]; then
               echo "❌ Schema validation failed: missing column $col"
               exit 1
@@ -141,13 +137,11 @@ jobs:
 
       - name: Apply schema (QA)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
-          -f db/migrations/001_create_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (QA)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
-          -f etl/load_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f etl/load_customers.sql
 
   # -------------------------
   # 4️⃣ DEPLOY PROD + Rollback + Schema Check + Monitoring
@@ -173,7 +167,7 @@ jobs:
           echo "Validating PROD schema..."
           EXPECTED_COLUMNS=("id" "name" "email" "created_at")
           for col in "${EXPECTED_COLUMNS[@]}"; do
-            EXISTS=$(PGPASSWORD=$DB_PASSWORD psql -t -A -h $DB_HOST -U $DB_USER -d $DB_NAME -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
+            EXISTS=$(PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_name='customers' AND column_name='$col';")
             if [ -z "$EXISTS" ]; then
               echo "❌ Schema validation failed: missing column $col"
               exit 1
@@ -184,21 +178,21 @@ jobs:
       - name: Backup PROD customers table
         run: |
           echo "Backing up PROD customers table..."
-          PGPASSWORD=$DB_PASSWORD pg_dump -t customers "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" > backup_customers.sql
+          PGPASSWORD="$DB_PASSWORD" pg_dump -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -t customers > backup_customers.sql
 
       - name: Apply schema (PROD)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" -f db/migrations/001_create_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (PROD)
         run: |
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" -f etl/load_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f etl/load_customers.sql
 
       - name: Rollback if PROD failed
         if: failure()
         run: |
           echo "⚠️ Deployment failed! Restoring backup..."
-          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" -f backup_customers.sql
+          PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -f backup_customers.sql
 
       - name: Monitor consistency across all environments (hash)
         run: |
@@ -208,7 +202,7 @@ jobs:
             local USER=$2
             local PASSWORD=$3
             local DB=$4
-            PGPASSWORD=$PASSWORD psql -t -A -h $HOST -U $USER -d $DB -c "SELECT md5(string_agg(t::text, '')) FROM (SELECT * FROM customers ORDER BY id) t;"
+            PGPASSWORD="$PASSWORD" psql -h "$HOST" -U "$USER" -d "$DB" -t -A -c "SELECT md5(string_agg(t::text, '')) FROM (SELECT * FROM customers ORDER BY id) t;"
           }
           DEV_HASH=$(hash_table "${{ secrets.DB_HOST_DEV }}" "${{ secrets.DB_USER_DEV }}" "${{ secrets.DB_PASSWORD_DEV }}" "${{ secrets.DB_NAME_DEV }}")
           INT_HASH=$(hash_table "${{ secrets.DB_HOST_INT }}" "${{ secrets.DB_USER_INT }}" "${{ secrets.DB_PASSWORD_INT }}" "${{ secrets.DB_NAME_INT }}")
