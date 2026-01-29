@@ -16,23 +16,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Load config for this environment
       - name: Set ENV variables
         run: |
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
           echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
-          echo "DB_PORT=5432" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
 
       - name: Apply schema (DEV)
         run: |
-          psql "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
           -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (DEV)
         run: |
-          psql "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
           -f etl/load_customers.sql
 
   # -------------------------
@@ -47,20 +46,20 @@ jobs:
 
       - name: Set ENV variables
         run: |
-          echo "DB_NAME=${{ secrets.DB_NAME_INT }}" >> $GITHUB_ENV
-          echo "DB_HOST=${{ secrets.DB_HOST_INT }}" >> $GITHUB_ENV
-          echo "DB_USER=${{ secrets.DB_USER_INT }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD_INT }}" >> $GITHUB_ENV
-          echo "DB_PORT=5432" >> $GITHUB_ENV
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
 
       - name: Apply schema (INT)
         run: |
-          psql "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
           -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (INT)
         run: |
-          psql "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
           -f etl/load_customers.sql
 
   # -------------------------
@@ -75,49 +74,48 @@ jobs:
 
       - name: Set ENV variables
         run: |
-          echo "DB_NAME=${{ secrets.DB_NAME_QA }}" >> $GITHUB_ENV
-          echo "DB_HOST=${{ secrets.DB_HOST_QA }}" >> $GITHUB_ENV
-          echo "DB_USER=${{ secrets.DB_USER_QA }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD_QA }}" >> $GITHUB_ENV
-          echo "DB_PORT=5432" >> $GITHUB_ENV
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
 
       - name: Apply schema (QA)
         run: |
-          psql "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
           -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (QA)
         run: |
-          psql "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
           -f etl/load_customers.sql
 
   # -------------------------
-  # 4️⃣ DEPLOY PROD WITH APPROVAL
+  # 4️⃣ DEPLOY PROD (Manual Approval)
   # -------------------------
   deploy-prod:
     runs-on: ubuntu-latest
     needs: deploy-qa
     environment:
       name: prod
-      # Add manual approval in GitHub UI for PROD
-      url: https://github.com/organizations/your-org/settings/environments/prod
+      # Enable manual approval in GitHub UI
     steps:
       - uses: actions/checkout@v4
 
       - name: Set ENV variables
         run: |
-          echo "DB_NAME=${{ secrets.DB_NAME_PROD }}" >> $GITHUB_ENV
-          echo "DB_HOST=${{ secrets.DB_HOST_PROD }}" >> $GITHUB_ENV
-          echo "DB_USER=${{ secrets.DB_USER_PROD }}" >> $GITHUB_ENV
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD_PROD }}" >> $GITHUB_ENV
-          echo "DB_PORT=5432" >> $GITHUB_ENV
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
 
       - name: Apply schema (PROD)
         run: |
-          psql "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
           -f db/migrations/001_create_customers.sql
 
       - name: Run ETL (PROD)
         run: |
-          psql "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+          PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&branch=production" \
           -f etl/load_customers.sql
