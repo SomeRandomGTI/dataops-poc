@@ -115,7 +115,7 @@ jobs:
       - name: Rollback if PROD failed
         if: failure()
         run: |
-          echo "⚠️ Deployment failed! Restoring backup..."
+          echo "Deployment failed! Restoring backup..."
           PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" -c "TRUNCATE customers;"
           PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" -c "\copy customers FROM 'backup_customers.csv' WITH CSV"
 
@@ -136,7 +136,7 @@ jobs:
           PROD_HASH=$(hash_table "${{ secrets.DB_HOST }}" "${{ secrets.DB_USER }}" "${{ secrets.DB_PASSWORD }}" "${{ secrets.DB_NAME }}")
           echo "DEV: $DEV_HASH, INT: $INT_HASH, QA: $QA_HASH, PROD: $PROD_HASH"
           if [ "$DEV_HASH" != "$INT_HASH" ] || [ "$DEV_HASH" != "$QA_HASH" ] || [ "$DEV_HASH" != "$PROD_HASH" ]; then
-            echo "⚠️ Data mismatch detected across environments!"
+            echo "Data mismatch detected across environments!"
             exit 1
           else
             echo "All environments have consistent data."
