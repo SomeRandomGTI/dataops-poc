@@ -1,6 +1,6 @@
 INSERT INTO customers (name)
 VALUES
-  ('Alice'),
-  ('Bob'),
-  ('Guy'),
-  ('Charlie');
+  ('ThisGuy'),
+  ('ThatGuy'),
+  ('DieMan'),
+  ('DieVrou');

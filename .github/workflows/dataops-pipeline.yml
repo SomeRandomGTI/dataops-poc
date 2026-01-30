@@ -7,9 +7,6 @@ on:
 
 jobs:
 
-  # -------------------------
-  # 1️⃣ DEPLOY DEV
-  # -------------------------
   deploy-dev:
     runs-on: ubuntu-latest
     environment: dev
@@ -34,9 +31,6 @@ jobs:
           PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f etl/load_customers.sql
 
-  # -------------------------
-  # 2️⃣ DEPLOY INT
-  # -------------------------
   deploy-int:
     runs-on: ubuntu-latest
     needs: deploy-dev
@@ -62,9 +56,6 @@ jobs:
           PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f etl/load_customers.sql
 
-  # -------------------------
-  # 3️⃣ DEPLOY QA
-  # -------------------------
   deploy-qa:
     runs-on: ubuntu-latest
     needs: deploy-int
@@ -90,9 +81,6 @@ jobs:
           PGPASSWORD=$DB_PASSWORD psql "postgresql://${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require" \
           -f etl/load_customers.sql
 
-  # -------------------------
-  # 4️⃣ DEPLOY PROD (Manual Approval + Rollback + Monitoring)
-  # -------------------------
   deploy-prod:
     runs-on: ubuntu-latest
     needs: deploy-qa
@@ -151,4 +139,4 @@ jobs:
             echo "⚠️ Data mismatch detected across environments!"
             exit 1
           else
-            echo "✅ All environments have consistent data."
+            echo "All environments have consistent data."
